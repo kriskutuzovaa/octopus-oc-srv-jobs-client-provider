@@ -18,8 +18,6 @@ class ClientGetter:
         Returns list of active clients
         :return list: list of strings client codes or empty list
         """
-        logging.debug("Reached get_clients")
-
         try:
             # get filtered records from DB, exclude those who does not have client code filled
             from oc_delivery_apps.dlmanager.models import Client
@@ -38,7 +36,6 @@ class ClientGetter:
         :param int client_id: client id (primary key)
         :return dict: client data or None
         """
-        logging.debug('Reached get_client_data')
         logging.debug('Requested code for id [%s]' % client_id)
 
         # get data for specific client, fiter by id
@@ -92,7 +89,6 @@ class ClientGetter:
         :param str code: CiType.code or CiTypeGroup.code 
         :return: list of Component (one for CiType or multiple for CiTypeGroup)
         """
-        logging.debug('Reached _resolve_search_components')
         logging.debug('The code is [%s]' % code)
         from oc_delivery_apps.checksums.models import CiTypeGroups, CiTypeIncs, CiTypes
 
@@ -162,7 +158,6 @@ class ClientGetter:
         :param str timezone: str
         :return: Django Queryset for the given parameters
         """
-        logging.info('Reached _process_search_params')
         logging.debug('Client code: [%s]' % client_code)
         logging.debug('Search Params: %s' % str(search_params))
 
@@ -359,7 +354,7 @@ class ClientGetter:
         :param dlmanager.models.Delivery delivery: delivery record
         :return list(dict()): list of dictionaries with files details
         """
-        logging.debug("Reached _get_files, Delivery id is [%d]" % delivery.id)
+        logging.debug("Delivery id is [%d]" % delivery.id)
 
         if not isinstance(delivery.mf_delivery_files_specified, str) \
                 or not delivery.mf_delivery_files_specified.strip():
@@ -389,7 +384,6 @@ class ClientGetter:
         :param dlmanager.models.Delivery delivery: delivery record
         :return dict: file-record as dictionary with details
         """
-        logging.debug("Reached _get_file_record")
         logging.debug("path: [%s]" % path)
         logging.debug("delivery: [%s]" % delivery)
         from oc_delivery_apps.checksums.models import Locations

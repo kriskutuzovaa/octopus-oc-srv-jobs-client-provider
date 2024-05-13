@@ -24,31 +24,33 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
     def __fill_db(self):
         lang_ru = dl_models.ClientLanguage(code="ru", description='ru')
         lang_ru.save()
+        lang_rus = dl_models.ClientLanguage(code="rus", description='rus')
+        lang_rus.save()
         lang_en = dl_models.ClientLanguage(code='en', description='en')
         lang_en.save()
-    
+
         def client_code(i):
             return 'TEST_CLIENT_{}'.format(i)
-    
+
         for index in range(50):
             dl_models.Client.objects.create(code=client_code(index), language=
-                    random.choice([lang_ru, lang_en]), is_active=True).save()
-    
+            random.choice([lang_ru, lang_en]), is_active=True).save()
+
         for index in range(50, 60):
             dl_models.Client.objects.create(code=client_code(index), language=
-                    random.choice([lang_ru, lang_en]), is_active=False).save()
-    
+            random.choice([lang_ru, lang_en]), is_active=False).save()
+
         for index in range(10):
             dl_models.Delivery.objects.create(groupid='test.{}'.format(client_code(1)),
-                                    artifactid='testartifact{}'.format(index),
-                                    version=1,
-                                    creation_date=(
+                                              artifactid='testartifact{}'.format(index),
+                                              version=1,
+                                              creation_date=(
                                         datetime.datetime.utcnow() - datetime.timedelta(days=index)).replace(
-                                            tzinfo=pytz.utc),
-                                    mf_delivery_files_specified='file')
-    
+                                                  tzinfo=pytz.utc),
+                                              mf_delivery_files_specified='file')
+
         dl_models.Client.objects.create(code=client_code(1488), is_active=True).save()
-    
+
     def setUp(self):
         django.core.management.call_command('migrate', verbosity=0, interactive=False)
         app = create_app(TestConfig)
@@ -110,7 +112,7 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
         _expected_list = sorted(list(map(lambda x: x.gav, _expected_list)))
         _actual_list = sorted(list(map(lambda x: x.get("gav"), _actual_list)))
         self.assertEqual(_actual_list, _expected_list)
-    
+
     def test_get_deliveries_in_csv(self):
         response = self.test_client.post('/deliveries', json={'client': 'TEST_CLIENT_1', 'csv': True})
         response_data = response.data.decode("utf-8").splitlines()
@@ -123,7 +125,7 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
 
     def test_get_deliveries_count_no_deliveries(self):
         response = self.test_client.post('/deliveries', json={'client': 'TEST_CLIENT_2', 'csv': False})
-        self.assertEqual (response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     def test_get_lang_client_not_found(self):
         data = ['TEST_CLIENT_666']
@@ -142,7 +144,7 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
         _delivery = response_data.pop(1)
         _project = _delivery.split(',').pop(0)
         response = self.test_client.post('/deliveries', json={
-            'client': 'TEST_CLIENT_1', 'csv': True, 'search_params':{'project': _project}})
+            'client': 'TEST_CLIENT_1', 'csv': True, 'search_params': {'project': _project}})
         self.assertEqual(_delivery, response.data.decode("utf-8").splitlines().pop())
 
     def test_get_one_distinct_delivery__json(self):
@@ -151,7 +153,7 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
         _delivery = response_data.pop()
         _project = _delivery.get("name")
         response = self.test_client.post('/deliveries', json={
-            'client': 'TEST_CLIENT_1', 'csv': False, 'search_params':{'project': _project}})
+            'client': 'TEST_CLIENT_1', 'csv': False, 'search_params': {'project': _project}})
         self.assertEqual(_delivery, response.json.pop())
 
     def test_get_deliveries_v2__no_customer(self):
@@ -175,8 +177,8 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
 
             # status must NOT be falsy
             self.assertTrue(bool(_d.get("status")))
-            
-            #files list must be a list
+
+            # files list must be a list
             _files = _d.get("files")
             self.assertIsInstance(_files, list)
 
@@ -195,7 +197,7 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
 
     def _random_text(self, len_min=None, len_max=None, add_chars=""):
         if not add_chars or not isinstance(add_chars, str):
-            add_chars=""
+            add_chars = ""
 
         if len_min is None:
             len_min = random.randint(2, 7)
@@ -210,7 +212,7 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
             _result += random.choice(string.ascii_letters + add_chars)
 
         return _result
-        
+
 
     def test_get_deliveries_v2__distinct(self):
         ## ADDITIONAL DATA FOR THIS EXACT TEST
@@ -243,8 +245,8 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
             _t.write(self._random_text().encode('utf-8'))
             _t.flush()
             _t.seek(0, os.SEEK_SET)
-            _csc.register_file_obj(_t, "SVNFILE", posixpath.join(_svn_root, _f), "SVN", 
-                    loc_revision=random.randint(1, 1000))
+            _csc.register_file_obj(_t, "SVNFILE", posixpath.join(_svn_root, _f), "SVN",
+                                   loc_revision=random.randint(1, 1000))
             _t.close()
 
         _delivery_record.mf_delivery_files_specified = '\n'.join(copy(_all_gavs) + copy(_all_svns))
@@ -254,7 +256,7 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
 
         # get one delivery with sub-files and assert all fields carefuly
         response = self.test_client.post('/v2/deliveries', json={'client': 'TEST_CLIENT_1',
-            "search_params": {"project": _delivery_name}})
+                                                                 "search_params": {"project": _delivery_name}})
         self.assertEqual(201, response.status_code)
 
         _delivery = response.json.pop()
@@ -293,10 +295,85 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
         _day_to_search_s = _day_to_search.strftime("%d-%m-%Y")
         _day_to_check = _day_to_search.strftime("%Y%m%d")
         _response = self.test_client.post('/v2/deliveries', json={'client': 'TEST_CLIENT_1',
-            "search_params": {"date_range_before": _day_to_search_s, "date_range_after": _day_to_search_s}})
+            "search_params": { "date_range_before": _day_to_search_s, "date_range_after": _day_to_search_s}})
         self.assertEqual(_response.status_code, 201)
 
         # since 'creation_date' is shifted on the whole day, then we have to obtain one first delivery
         self.assertEqual(len(_response.json), 1)
         _delivery = _response.json.pop()
         self.assertTrue(_delivery.get('creation_date_mr').startswith(_day_to_check))
+
+    def test_get_client_data_list_tf(self):
+        response = self.test_client.get("/sync_customer_tf")
+        self.assertEqual(response.status_code, 200)
+        _actual_dict = response.json
+
+        _expected_dict = list()
+        for _record in dl_models.Client.objects.filter(is_active=True).order_by('code'):
+            _record = _record.__dict__
+            _expected_dict.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
+
+        self.assertEqual(_actual_dict, _expected_dict)
+        self.assertEqual(len(_actual_dict), 51)
+
+    def test_get_client_data_list_tf__with_parameters(self):
+        self.test_client.put("/sync_customer_tf",
+                             json={'code': 'TEST_CLIENT_999', 'country': 'Scotland', 'language_id': 2})
+
+        _expected_record = dl_models.Client.objects.get(code='TEST_CLIENT_999').__dict__
+        _expected_record = dict((__k, _expected_record[__k]) for __k in sorted(_expected_record.keys())
+                                if not __k.startswith('_'))
+        _expected_dict = [_expected_record]
+
+        response = self.test_client.get("/sync_customer_tf",
+                                        query_string={'id': _expected_record.get('id'), 'code': 'TEST_CLIENT_999',
+                                                      'country': 'Scotland', 'language_id': 2})
+        self.assertEqual(response.status_code, 200)
+        _actual_dict = response.json
+
+        self.assertEqual(_actual_dict, _expected_dict)
+        self.assertEqual(len(_actual_dict), 1)
+
+    def test_delete_client_data_tf(self):
+        response = self.test_client.delete("/sync_customer_tf", json={'code': 'TEST_CLIENT_1', 'lala': 'lala'})
+        self.assertEqual(response.status_code, 200)
+        _actual_dict = response.json
+
+        _expected_dict = list()
+        for _record in dl_models.Client.objects.filter(is_active=True).order_by('code'):
+            _record = _record.__dict__
+            _expected_dict.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
+
+        self.assertEqual(_actual_dict, _expected_dict)
+        self.assertEqual(len(_actual_dict), 50)
+
+    def test_put_client_data_tf(self):
+        response = self.test_client.put("/sync_customer_tf", json={'code': 'TEST_CLIENT_999', 'country': 'Scotland'})
+        self.assertEqual(response.status_code, 201)
+        _actual_dict = response.json
+
+        _expected_dict = list()
+        for _record in dl_models.Client.objects.filter(is_active=True).order_by('code'):
+            _record = _record.__dict__
+            _expected_dict.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
+
+        self.assertEqual(_actual_dict, _expected_dict)
+        self.assertEqual(len(_actual_dict), 52)
+
+    def test_put_client_data_tf__with_parameters(self):
+        response = self.test_client.put("/sync_customer_tf",
+                                        json={'code': 'TEST_CLIENT_999',
+                                              'country': 'Scotland',
+                                              'is_active': False,
+                                              'language': 'en'},
+                                        query_string={'is_active': False})
+        self.assertEqual(response.status_code, 201)
+        _actual_dict = response.json
+
+        _expected_dict = list()
+        for _record in dl_models.Client.objects.filter(is_active=False).order_by('code'):
+            _record = _record.__dict__
+            _expected_dict.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
+
+        self.assertEqual(_actual_dict, _expected_dict)
+        self.assertEqual(len(_actual_dict), 11)
