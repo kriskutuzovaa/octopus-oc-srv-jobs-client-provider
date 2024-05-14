@@ -1,5 +1,5 @@
-import json
 import logging
+import os
 
 
 ## NOTE: imports of django-related things are done in the methods where they necessary
@@ -18,7 +18,7 @@ class ClientTF:
         :return dict: list of client data or None
         """
         search_params['is_active'] = search_params.get('is_active', True)
-        logging.debug('Requested data for clients with: ' + json.dumps(search_params))
+        logging.debug('Requested data for clients with: ' + str(search_params))
 
         from oc_delivery_apps.dlmanager.models import Client
         try:
@@ -38,9 +38,8 @@ class ClientTF:
         """
         Put new client from data
         :param client: client data
-        :return dict: list of client data or None
         """
-        logging.debug('Requested to put client with: ' + json.dumps(client))
+        logging.debug('Requested to put client with: ' + str(client))
 
         from oc_delivery_apps.dlmanager.models import Client, FtpUploadClientOptions
         _client, _ = Client.objects.get_or_create(code=client['code'])
@@ -59,7 +58,6 @@ class ClientTF:
         """
         Delete client given by client code
         :param client: client data
-        :return dict: list of client data or None
         """
         logging.debug('Requested deletion of client with code [%s]' % client['code'])
 
@@ -105,4 +103,4 @@ class ClientTF:
                 logging.exception(_e)
                 pass
 
-        return ClientLanguage.objects.get(code='rus')
+        return ClientLanguage.objects.get(code=os.getenv('CLIENT_LANG_DEFAULT', 'en'))

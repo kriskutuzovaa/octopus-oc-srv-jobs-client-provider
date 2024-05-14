@@ -24,8 +24,6 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
     def __fill_db(self):
         lang_ru = dl_models.ClientLanguage(code="ru", description='ru')
         lang_ru.save()
-        lang_rus = dl_models.ClientLanguage(code="rus", description='rus')
-        lang_rus.save()
         lang_en = dl_models.ClientLanguage(code='en', description='en')
         lang_en.save()
 
@@ -306,74 +304,74 @@ class ClientProviderTestSuite(django.test.TransactionTestCase):
     def test_get_client_data_list_tf(self):
         response = self.test_client.get("/sync_customer_tf")
         self.assertEqual(response.status_code, 200)
-        _actual_dict = response.json
+        _actual_result = response.json
 
-        _expected_dict = list()
+        _expected_result = list()
         for _record in dl_models.Client.objects.filter(is_active=True).order_by('code'):
             _record = _record.__dict__
-            _expected_dict.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
+            _expected_result.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
 
-        self.assertEqual(_actual_dict, _expected_dict)
-        self.assertEqual(len(_actual_dict), 51)
+        self.assertEqual(_actual_result, _expected_result)
+        self.assertEqual(len(_actual_result), 51)
 
     def test_get_client_data_list_tf__with_parameters(self):
         self.test_client.put("/sync_customer_tf",
-                             json={'code': 'TEST_CLIENT_999', 'country': 'Scotland', 'language_id': 2})
+                             json={'code': 'TEST_CLIENT_999', 'country': 'TestCountry', 'language_id': 2})
 
         _expected_record = dl_models.Client.objects.get(code='TEST_CLIENT_999').__dict__
         _expected_record = dict((__k, _expected_record[__k]) for __k in sorted(_expected_record.keys())
                                 if not __k.startswith('_'))
-        _expected_dict = [_expected_record]
+        _expected_result = [_expected_record]
 
         response = self.test_client.get("/sync_customer_tf",
                                         query_string={'id': _expected_record.get('id'), 'code': 'TEST_CLIENT_999',
-                                                      'country': 'Scotland', 'language_id': 2})
+                                                      'country': 'TestCountry', 'language_id': 2})
         self.assertEqual(response.status_code, 200)
-        _actual_dict = response.json
+        _actual_result = response.json
 
-        self.assertEqual(_actual_dict, _expected_dict)
-        self.assertEqual(len(_actual_dict), 1)
+        self.assertEqual(_actual_result, _expected_result)
+        self.assertEqual(len(_actual_result), 1)
 
     def test_delete_client_data_tf(self):
         response = self.test_client.delete("/sync_customer_tf", json={'code': 'TEST_CLIENT_1', 'lala': 'lala'})
         self.assertEqual(response.status_code, 200)
-        _actual_dict = response.json
+        _actual_result = response.json
 
-        _expected_dict = list()
+        _expected_result = list()
         for _record in dl_models.Client.objects.filter(is_active=True).order_by('code'):
             _record = _record.__dict__
-            _expected_dict.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
+            _expected_result.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
 
-        self.assertEqual(_actual_dict, _expected_dict)
-        self.assertEqual(len(_actual_dict), 50)
+        self.assertEqual(_actual_result, _expected_result)
+        self.assertEqual(len(_actual_result), 50)
 
     def test_put_client_data_tf(self):
-        response = self.test_client.put("/sync_customer_tf", json={'code': 'TEST_CLIENT_999', 'country': 'Scotland'})
+        response = self.test_client.put("/sync_customer_tf", json={'code': 'TEST_CLIENT_999', 'country': 'TestCountry'})
         self.assertEqual(response.status_code, 201)
-        _actual_dict = response.json
+        _actual_result = response.json
 
-        _expected_dict = list()
+        _expected_result = list()
         for _record in dl_models.Client.objects.filter(is_active=True).order_by('code'):
             _record = _record.__dict__
-            _expected_dict.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
+            _expected_result.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
 
-        self.assertEqual(_actual_dict, _expected_dict)
-        self.assertEqual(len(_actual_dict), 52)
+        self.assertEqual(_actual_result, _expected_result)
+        self.assertEqual(len(_actual_result), 52)
 
     def test_put_client_data_tf__with_parameters(self):
         response = self.test_client.put("/sync_customer_tf",
                                         json={'code': 'TEST_CLIENT_999',
-                                              'country': 'Scotland',
+                                              'country': 'TestCountry',
                                               'is_active': False,
                                               'language': 'en'},
                                         query_string={'is_active': False})
         self.assertEqual(response.status_code, 201)
-        _actual_dict = response.json
+        _actual_result = response.json
 
-        _expected_dict = list()
+        _expected_result = list()
         for _record in dl_models.Client.objects.filter(is_active=False).order_by('code'):
             _record = _record.__dict__
-            _expected_dict.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
+            _expected_result.append(dict((__k, _record[__k]) for __k in sorted(_record.keys()) if not __k.startswith('_')))
 
-        self.assertEqual(_actual_dict, _expected_dict)
-        self.assertEqual(len(_actual_dict), 11)
+        self.assertEqual(_actual_result, _expected_result)
+        self.assertEqual(len(_actual_result), 11)

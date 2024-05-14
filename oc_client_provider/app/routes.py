@@ -196,7 +196,7 @@ def sync_customer_tf():
     """
     # doing our business depending on request type
     # returning normal JSON response
-    logging.info("/sync_customer_tf")
+    logging.info("/sync_customer_tf from [%s]" % request.remote_addr)
     logging.debug(f"Args: [{request.args}]")
 
     _client_tf = ClientTF()
