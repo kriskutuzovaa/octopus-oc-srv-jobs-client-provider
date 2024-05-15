@@ -8,6 +8,7 @@ from .client_getter import ClientGetter
 from . import client_provider_bp
 from .client_counterparty import ClientCounterparty
 import logging
+from .client_tf import ClientTF
 
 client_getter = ClientGetter()
 
@@ -79,7 +80,7 @@ def get_client_list():
     if not client_list:
         if 'rundeck' not in request.url_rule.rule:
             return response_json(404, {"result": "Client not found"})
-        
+
         client_list = list()
 
     if 'rundeck' in request.url_rule.rule:
@@ -163,8 +164,8 @@ def get_client_deliveries_v2():
     return response_json(201, delivery_list)
 
 
-@client_provider_bp.route ('/get_client_data/<int:client_id>', methods=['GET'] )
-def get_client_data (client_id):
+@client_provider_bp.route('/get_client_data/<int:client_id>', methods=['GET'])
+def get_client_data(client_id):
     """
     Endpoint returning client data by id
     """
@@ -180,10 +181,32 @@ def get_client_data (client_id):
 
     return response_json(200, client_data)
 
-@client_provider_bp.route('/client_counterparty/<string:client_code>', methods = ['GET'] )
-def get_counterparty (client_code):
+@client_provider_bp.route('/client_counterparty/<string:client_code>', methods=['GET'])
+def get_counterparty(client_code):
     """
     Endpoint returning client counterparty
     """
     logging.info("GET /client_counterparty/%s from [%s]" % (client_code, request.remote_addr))
     return response_json(200, {client_code: ClientCounterparty().client_counterparty(client_code)})
+
+@client_provider_bp.route('/sync_customer_tf', methods=['GET', 'PUT', 'DELETE'])
+def sync_customer_tf():
+    """
+    Synchronize client record and return filtered list as requested
+    """
+    # doing our business depending on request type
+    # returning normal JSON response
+    logging.info("/sync_customer_tf from [%s]" % request.remote_addr)
+    logging.debug(f"Args: [{request.args}]")
+
+    _client_tf = ClientTF()
+    # fork upon method used
+    if request.method in ['PUT', 'DELETE']:
+        logging.debug(f"JSON: [{request.json}]")
+        try:
+            getattr(_client_tf, f"{request.method.lower()}_client")(**request.json)
+        except Exception as _e:
+            logging.exception(_e)
+            return response_json(400, {"result": f"{repr(_e)}"})
+
+    return response_json(201 if request.method == 'PUT' else 200, _client_tf.get_client(**request.args))
