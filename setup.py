@@ -17,5 +17,7 @@ setup(name="oc-client-provider",
             "gunicorn",
             "pytz",
             "pyyaml"],
-      packages={"oc_client_provider"},
+      packages=[
+            "oc_client_provider",
+            "oc_client_provider.app"],
       python_requires=">=3.6")

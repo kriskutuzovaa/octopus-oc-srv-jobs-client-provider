@@ -225,7 +225,6 @@ def sync_customer_tf():
     # doing our business depending on request type
     # returning normal JSON response
     logging.info("/sync_customer_tf from [%s]" % request.remote_addr)
-
     _rq_args = _adjust_arguments(request.args.to_dict())
     logging.debug(f"Args: [{_rq_args}]")
 
@@ -234,6 +233,7 @@ def sync_customer_tf():
     if request.method in ['PUT', 'DELETE']:
         _rq_json = _adjust_arguments(request.json)
         logging.debug(f"JSON: [{_rq_json}]")
+        
         try:
             getattr(_client_tf, f"{request.method.lower()}_client")(**_rq_json)
         except Exception as _e:
